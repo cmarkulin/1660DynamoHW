@@ -2,7 +2,8 @@ import boto3
 import csv 
 import os
 
-# use environment variables for AWS creds with os.environ
+# use environment variables for AWS creds with os.environ. You don't want them in the code especially if 
+# the repo is public...
 s3 = boto3.resource('s3', 
     aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'], 
     aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'] 
@@ -17,7 +18,7 @@ except Exception as e:
 bucket = s3.Bucket("chm171-bucket") 
 bucket.Acl().put(ACL='public-read') 
 
-#upload a new object into the bucket 
+#upload the experiment files to the bucket (the other experiment files get added to the bucket during the csv parsing, but we do it here too.)
 body = open('./experiments.csv', 'rb') 
 o = s3.Object('chm171-bucket', 'experiments.csv').put(Body=body ) 
 s3.Object('chm171-bucket', 'experiments.csv').Acl().put(ACL='public-read')
@@ -41,6 +42,7 @@ dyndb = boto3.resource('dynamodb',
     aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'] 
  ) 
 
+#try to create the table if it hasn't been made yet. We make the partition key the Id from the csv files.
 try: 
     table = dyndb.create_table( 
         TableName='DataTable', 
